@@ -1,0 +1,16 @@
+Plurality
+[9999, 1, 0, 0, 0, 0, 0, 0]
+Borda Count
+[9117, 842, 41, 0, 0, 0, 0, 0]
+Condorcet Winner
+[9996, 1, 0, 0, 0, 0, 0, 0]
+2-Approval
+[7232, 2768, 0, 0, 0, 0, 0, 0]
+3-Approval
+[6378, 2568, 1054, 0, 0, 0, 0, 0]
+4-Approval
+[6061, 2509, 1042, 387, 1, 0, 0, 0]
+Two Phase Runoff
+[9999, 1, 0, 0, 0, 0, 0, 0]
+Borda with Single Random Dropout
+[7964, 1836, 198, 2, 0, 0, 0, 0]
