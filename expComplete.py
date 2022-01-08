@@ -46,7 +46,42 @@ def BordaCount(voti):
 		WINNERSBORDA[6]+=1
 	elif winnerBorda=='H':
 		WINNERSBORDA[7]+=1
-		print(voti)
+		# print(voti)
+
+def SelfDistancingBorda(voti):
+	eRank = votelib.component.rankscore.Borda(base=0)
+	eConvert = votelib.convert.RankedToPositionalVotes(eRank, unranked_scoring='zero')
+	bordas = eConvert.convert(voti)
+
+	distancedBordas={}
+	for k1,v1 in bordas.items():
+		for k2,v2 in detArea.items():
+			if(k1==k2):
+				distancedBordas[k1] = int(v1/v2)
+	# stampa(distancedBordas)
+
+	eEvaluate = votelib.evaluate.core.Plurality()
+	winnerBorda=eEvaluate.evaluate(distancedBordas)[0]
+	# ci sono più candidati?
+	unTier = votelib.evaluate.core.Tie()
+	winnerBorda = min(unTier.break_by_list(winnerBorda,[]))
+	if winnerBorda=='A':
+		WINNERSSELF[0]+=1
+	elif winnerBorda=='B':
+		WINNERSSELF[1]+=1
+	elif winnerBorda=='C':
+		WINNERSSELF[2]+=1
+	elif winnerBorda=='D':
+		WINNERSSELF[3]+=1
+	elif winnerBorda=='E':
+		WINNERSSELF[4]+=1
+	elif winnerBorda=='F':
+		WINNERSSELF[5]+=1
+	elif winnerBorda=='G':
+		WINNERSSELF[6]+=1
+	elif winnerBorda=='H':
+		WINNERSSELF[7]+=1
+		# print(voti)
 
 def Plurality(voti):
 	eRank = votelib.component.rankscore.FixedTop(1)
@@ -169,6 +204,54 @@ def TwoPhaseRunoff(voti):
 	elif twophaserunoffwinner=='H':
 		WINNERSTWOPHASE[7]+=1
 
+def TwoPhaseTopKiller(voti):
+	top_approval=1
+	seq=[1 for i in range(top_approval)]
+	eRank = votelib.component.rankscore.SequenceBased(seq)
+	eConvert = votelib.convert.RankedToPositionalVotes(eRank, unranked_scoring='zero')
+	eEvaluate = votelib.evaluate.auxiliary.InputOrderSelector()
+	candidati=eEvaluate.evaluate(eConvert.convert(voti),n_seats=2)
+
+	dropvoti={}
+	for k,v in voti.items():
+		keys = list(k)
+		keys.remove(candidati[0])
+		keys.remove(candidati[1])
+		keys=tuple(keys)
+		if keys not in dropvoti:
+			dropvoti[keys]=v
+		else:
+			dropvoti[keys]+=v
+
+	# stampa(dropvoti)
+
+	top_approval = 4
+	seq=[1 for i in range(top_approval)]
+	eRank = votelib.component.rankscore.SequenceBased(seq)
+	eConvert = votelib.convert.RankedToPositionalVotes(eRank, unranked_scoring='zero')
+	eEvaluate = votelib.evaluate.core.Plurality()
+	topwinner=eEvaluate.evaluate(eConvert.convert(dropvoti))[0]
+	# ci sono più candidati?
+	unTier = votelib.evaluate.core.Tie()
+	topwinner = min(unTier.break_by_list(topwinner,[]))
+
+	if topwinner=='A':
+		WINNERSTOPKILLER[0]+=1
+	elif topwinner=='B':
+		WINNERSTOPKILLER[1]+=1
+	elif topwinner=='C':
+		WINNERSTOPKILLER[2]+=1
+	elif topwinner=='D':
+		WINNERSTOPKILLER[3]+=1
+	elif topwinner=='E':
+		WINNERSTOPKILLER[4]+=1
+	elif topwinner=='F':
+		WINNERSTOPKILLER[5]+=1
+	elif topwinner=='G':
+		WINNERSTOPKILLER[6]+=1
+	elif topwinner=='H':
+		WINNERSTOPKILLER[7]+=1
+
 def BordaWithDropout(voti):
 	# scelgo a caso un device da eliminare
 	dropout = random.choice(orderedDevices)
@@ -265,6 +348,11 @@ for esperimento in exp:
 	WINNERSAPPROVAL = [W2APPROVAL,W3APPROVAL,W4APPROVAL]
 	WINNERSTWOPHASE = [0 for i in range(0,n)]
 	WINNERSRANDOMBORDA = [0 for i in range(0,n)]
+	WINNERSTOPKILLER = [0 for i in range(0,n)]
+	WINNERSSELF = [0 for i in range(0,n)]
+
+	detArea = {}
+
 	for giro in range(0,10000):
 		# random.seed(12)
 		scelte=[i for i in esperimento]
@@ -281,6 +369,7 @@ for esperimento in exp:
 			# a_caso serve per avere liste di visibilità lunghe diverse
 			# sceglie un numero compreso tra 0 e n (->numero di devices)
 			a_caso=random.choice(scelte)
+			detArea[d[1]] = a_caso+1
 			# elementi è un campionamento senza reinserimento di "a_caso" devices
 			elementi = random.sample(devices, k=a_caso)
 			for el in elementi:
@@ -291,7 +380,7 @@ for esperimento in exp:
 			l.sort(reverse=True)
 		# print("SORTED DICT: ")
 		# stampa(visibilityDict)
-
+		
 		# ora devo stampare le liste in ordine e bene
 		liste=[]
 		for i in visibilityDict.values():
@@ -335,37 +424,25 @@ for esperimento in exp:
 		TopApproval(voti)
 		TwoPhaseRunoff(voti)
 		BordaWithDropout(voti)
+		TwoPhaseTopKiller(voti)
+		SelfDistancingBorda(voti)
+	# print(WINNERSSELF)
 
+
+	
 	print()
 	print("ESPERIMENTO:",esperimento,'\n')
-	# print("PLURALITY")
-	# print(WINNERSPLURALITY)
 	barPlot(WINNERSPLURALITY,'Plurality',esperimento)
-
-	# print("\nBORDA COUNT")
-	# print(WINNERSBORDA)
 	barPlot(WINNERSBORDA,'Borda Count',esperimento)
-
-	# print("\nCONDORCET WINNER")
-	# print(WINNERSCONDORCET)
 	barPlot(WINNERSCONDORCET,'Condorcet Winner',esperimento)
-	# print("\nRUNOFF (PROBLEMA***)")
-	# print(WINNERSRUNOFF)
-	# print("\nAPPROVAL")
-	# print("TOP-2",WINNERSAPPROVAL[0])
 	barPlot(WINNERSAPPROVAL[0],'2-Approval',esperimento)
-	# print("TOP-3",WINNERSAPPROVAL[1])
 	barPlot(WINNERSAPPROVAL[1],'3-Approval',esperimento)
-	# print("TOP-4",WINNERSAPPROVAL[2])
 	barPlot(WINNERSAPPROVAL[2],'4-Approval',esperimento)
-
-	# print("\nTWO PHASE RUNOFF")
-	# print(WINNERSTWOPHASE)
 	barPlot(WINNERSTWOPHASE,'Two Phase Runoff',esperimento)
-
-	# print("\nBORDA COUNT WITH CASUAL SINGLE DROPOUT")
-	# print(WINNERSRANDOMBORDA)
 	barPlot(WINNERSRANDOMBORDA,'Borda with Random Dropout',esperimento)
+	barPlot(WINNERSTOPKILLER,'Two Phase Top Killer',esperimento)
+	barPlot(WINNERSSELF,'Self Distancing Borda',esperimento)
+
 
 	filename = "Plots/"+str(esperimento)+".txt"
 	f=open(filename,'w')
@@ -392,3 +469,9 @@ for esperimento in exp:
 	f.write("\n")
 	f.write("Borda with Single Random Dropout\n")
 	f.write(str(WINNERSRANDOMBORDA))
+	f.write("\n")
+	f.write("Two Phase Top Killer\n")
+	f.write(str(WINNERSTOPKILLER))
+	f.write("\n")
+	f.write("Self Distancing Borda\n")
+	f.write(str(WINNERSSELF))

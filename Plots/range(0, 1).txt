@@ -13,4 +13,8 @@ Condorcet Winner
 Two Phase Runoff
 [10000, 0, 0, 0, 0, 0, 0, 0]
 Borda with Single Random Dropout
-[8746, 1254, 0, 0, 0, 0, 0, 0]
+[8689, 1311, 0, 0, 0, 0, 0, 0]
+Two Phase Top Killer
+[0, 0, 10000, 0, 0, 0, 0, 0]
+Self Distancing Borda
+[10000, 0, 0, 0, 0, 0, 0, 0]
